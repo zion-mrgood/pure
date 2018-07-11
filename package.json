@@ -1,0 +1,23 @@
+{
+  "name": "pure",
+  "version": "0.0.1",
+  "description": "pure",
+  "main": "index.js",
+  "scripts": {
+    "start": "node webpack.config.js mode=development --port 8080",
+    "build": "node webpack.config.js mode=production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zion-mrgood/pure.git"
+  },
+  "author": "MrGood",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zion-mrgood/pure/issues"
+  },
+  "homepage": "https://github.com/zion-mrgood/pure#readme",
+  "devDependencies": {
+    "webpack": "^4.15.1"
+  }
+}
