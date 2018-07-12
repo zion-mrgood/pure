@@ -1,101 +1,134 @@
+// 路径工具
+const path = require('path');
+// html 插件
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+// webpack
+const webpack = require('webpack');
+// 清理插件
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
-console.log(232)
+console.log('webpack.config.js')
+
+// 配置
+const config = {
+  
+}
+
+/**
+  备用知识库和插件
+  webpack-merge
+  CommonsChunkPlugin
+  manifest
+*/
 
 
-// var path = require('path')
-// var utils = require('./utils')
-// var config = require('../config')
-// var vueLoaderConfig = require('./vue-loader.conf')
-
-// function resolve (dir) {
-  // return path.join(__dirname, '..', dir)
-// }
-// module.exports = {
-  // entry: {
-    // app: config.dev.entry
-  // },
-  // output: {
-    // path: config.build.assetsRoot,
-    // filename: '[name].js',
-    // publicPath: process.env.NODE_ENV === 'production'
-      // ? config.build.assetsPublicPath
-      // : config.dev.assetsPublicPath
-  // },
-  // resolve: {
-    // extensions: ['.js', '.vue', '.json'],
-    // alias: {
-      // 'vue$': 'vue/dist/vue.esm.js',
-      // "mockjs$": "mockjs/dist/mock-min.js",
-      // "axios$": "axios/dist/axios.min.js",
-      // "jquery$": "jquery/dist/jquery.min.js",
-      // "zepto$": "zepto/dist/zepto.min.js",
-      // "velocity$": "velocity-animate/velocity.min.js",
-      // "velocity-ui$": "velocity-animate/velocity.ui.min.js",
-      // "babel-polyfill$": "babel-polyfill/dist/polyfill.min.js",
-      // '@': resolve('src')
-    // }
-  // },
-  // module: {
-    // rules: [
-      // // {
-      // //   test: /\.(js|vue)$/,
-      // //   loader: 'eslint-loader',
-      // //   enforce: 'pre',
-      // //   include: [resolve('src'), resolve('test')],
-      // //   options: {
-      // //     formatter: require('eslint-friendly-formatter')
-      // //   }
-      // // },
-      // {
-        // test: /\.vue$/,
-        // loader: 'vue-loader',
-        // options: vueLoaderConfig
-      // },
-      // {
-        // test: /\.js$/,
-        // loader: 'babel-loader',
-        // include: [resolve('src'), resolve('test')]
-      // },
-      // {
-        // "test": /\.json$/,
-        // "loader": "json-loader"
-      // },
-      // {
-        // "test": /\.ejs$/,
-        // "loader": "ejs-compiled-loader"
-      // },
-      // {
-        // test: /\.(png|jpe?g|gif|svg|ico)(\?.*)?$/,
-        // loader: 'url-loader',
-        // options: {
-          // limit: 10000,
-          // name: utils.assetsPath('img/[name].[hash:7].[ext]')
-        // }
-      // },
-      // {
-        // test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-        // loader: 'url-loader',
-        // options: {
-          // limit: 10000,
-          // name: utils.assetsPath('media/[name].[hash:7].[ext]')
-        // }
-      // },
-      // {
-        // test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        // loader: 'url-loader',
-        // options: {
-          // limit: 10000,
-          // name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
-        // }
-      // },
-      // // {
-      // //   test: path.join(require.resolve('zepto'), '../zepto.min.js'),
-      // //   loader: 'exports-loader?window.$!script-loader'
-      // // },
-      // {
-        // test: path.join(require.resolve('jquery'), '../jquery.min.js'),
-        // loader: 'exports-loader?window.$!script-loader'
-      // }
-    // ]
-  // }
-// }
+module.exports = {
+  /** mode 模式 or --mode=production / process.env.NODE_ENV
+    development
+    [
+      NamedChunksPlugin,
+      NamedModulesPlugin
+    ]
+    
+    production
+    [
+      FlagDependencyUsagePlugin,
+      FlagIncludedChunksPlugin,
+      ModuleConcatenationPlugin,
+      NoEmitOnErrorsPlugin,
+      OccurrenceOrderPlugin,
+      SideEffectsFlagPlugin
+      UglifyJsPlugin
+    ]
+  */
+  mode: 'production',
+  // 入口 entry
+  entry: {
+    main: 'asd',
+    vendor: ''
+  },
+  // source-map
+  devtool: 'inline-source-map',
+  // 开发服务器 dev-server
+  devServer: {
+    contentBase: './dist',
+    hot: true
+  },
+  // 出口 output
+  output: {
+    // 输出文件名
+    filename: 'my-first-webpack.bundle.js',
+    filename: '[name][hash].js',
+    filename: '[name][chunkhash].js',
+    // 输出的绝对路径
+    path: path.resolve('__dirname', 'dist'),
+    path: path.join('__dirname', 'dist'),
+    // 基础路径
+    publicPath: 'cdn'
+  },
+  // loader 编译
+  module: {
+    rules: [
+      // css-loader
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
+      // image-loader
+      {
+        test: /\.(png|svg|jpg|gif|jpeg|JPG)$/,
+        use: [
+          'file-loader'
+        ]
+      },
+      // font-loader
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        use: [
+          'file-loader'
+        ]
+      },
+      // csv|tsv-loader
+      {
+        test: /\.(csv|tsv)$/,
+        use: [
+          'csv-loader'
+        ]
+      },
+      // xml-loader
+      {
+        test: /\.xml$/,
+        use: [
+          'xml-loader'
+        ]
+      }
+    ]
+  },
+  // plugins 插件
+  plugins: [
+    // 压缩
+    new webpack.optimize.UglifyJsPlugin(),
+    // 引用html模板
+    new HtmlWebpackPlugin({
+      title: 'test',
+      template: 'dfsl.html'
+    }),
+    // chunk切块
+    new webpack.optimize.CommonsChunkPlugin({
+      name: ['vendor']
+    }),
+    // 清理
+    new CleanWebpackPlugin([
+      'dist'
+    ]),
+    // HMR需要
+    new webpack.NameModulesPlugin(),
+    new webpack.HotModuleReplacementPlugin()
+  ]
+  
+  
+}
+module.exports = config;
