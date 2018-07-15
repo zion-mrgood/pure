@@ -1,228 +1,203 @@
+// const ExtractTextPlugin = require('extract-text-webpack-plugin')
+// const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
+
+// 开搞了 ######################################################################  
 // 路径工具
-const path = require('path');
-// html 插件
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path')
+// 粉笔插件
+const chalk = require('chalk')
 // webpack
 const webpack = require('webpack');
 // 清理插件
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 // 合并
 const merge = require('webpack-merge');
-
-console.log('webpack.config.js')
+// 分析
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// cli 配置
+const minimist = require('minimist');
+const getParamFromCLI = () => minimist(process.argv.slice(2));
+const cliParams = getParamFromCLI();
 
 // 配置
-const config = {
-  
+const env = cliParams.mode;
+
+const global = require('./conf/global.conf.js');
+const webpackCommon = require('./conf/webpack.common.conf.js');
+
+const output = {
+  production: {
+    // 输出文件名
+    filename: '[name].[chunkhash].js',
+  },
+  development: {
+    // 输出文件名
+    filename: '[name].js',
+  }
 }
 
-/**
-  备用知识库和插件
-  webpack-merge
-  CommonsChunkPlugin
-  manifest
-  sideEffects tree-shaking 删除没有副作用的没有引用的代码
-  bundle-loader 用于分离代码和延迟加载
-  promise-loader 用promises 类似bundle-loader
+const resolve = {
+}
   
-  if (process.env.NODE_ENV !== 'production') {
-    doSomething...
+const rules = [
+  {
+    test: /\.(png|jpe?g|gif|svg|ico)(\?.*)?$/,
+    loader: 'url-loader',
+    options: {
+      limit: 10000,
+      name: 'img/[name].[hash:7].[ext]'
+    }
+  },
+  {
+    test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+    loader: 'url-loader',
+    options: {
+      limit: 10000,
+      name: 'media/[name].[hash:7].[ext]'
+    }
+  },
+  {
+    test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+    loader: 'url-loader',
+    options: {
+      limit: 10000,
+      name: 'fonts/[name].[hash:7].[ext]'
+    }
+  },
+  {
+    test: /\.css$/,
+    use: [
+      'style-loader',
+      'css-loader'
+    ]
   }
-  
-  bundle分析
-  webpack-chart: webpack 数据交互饼图。
-  webpack-visualizer: 可视化并分析你的 bundle，检查哪些模块占用空间，哪些可能是重复使用的。
-  webpack-bundle-analyzer: 一款分析 bundle 内容的插件及 CLI 工具，以便捷的、交互式、可缩放的树状图形式展现给用户。
-  
-  懒加载 
-  
-  ProvidePugin
-  
-  
-  import 'babel-polyfill'
-  用whatwg-fetch，现代浏览器不加载babel-polyfill
-  polyfills.js
-  import 'babel-polyfill'
-  import 'whatwg-fetch'
-  
-  var modernBrowser = (
-    'fetch' in window &&
-    'assign' in Object
-  );
-  
-  if ( !modernBrowser ) {
-    var scriptElement = document.createElement('script');
-  
-    scriptElement.async = false;
-    scriptElement.src = '/polyfills.bundle.js';
-    document.head.appendChild(scriptElement);
-  }
-  
-  主版本号： 当API发生改变，并与之前的版本不兼容的时候
-  次版本号： 当增加了功能，但是向后兼容的时候
-  补丁版本号： 当做了向后兼容的缺陷修复的时候
-  
-  dev模式不要使用下面工具
-UglifyJsPlugin
-ExtractTextPlugin
-[hash]/[chunkhash]
-AggressiveSplittingPlugin
-AggressiveMergingPlugin
-ModuleConcatenationPlugin
-  
-*/
-  // chunkFilename配置 异步加载
-  // return import(/* webpackChunkName */ 'lodash').then().catch()
-  // or
-  // async function func(){
-    // const _ = await import(/* webpackChunkName: "loadash" */ 'lodash');
-    // return el
-  // }
-  // func().then().catch();
+]
 
-// ################# 以上是注释  
-
-// module.exports = merge(target, {
-  // devtool: 'inline-source-map'
-// })
-
-
-module.exports = {
-  /** mode 模式 or --mode=production / process.env.NODE_ENV
-    development
-    [
-      NamedChunksPlugin,
-      NamedModulesPlugin
-    ]
-    
-    production
-    [
-      FlagDependencyUsagePlugin,
-      FlagIncludedChunksPlugin,
-      ModuleConcatenationPlugin,
-      NoEmitOnErrorsPlugin,
-      OccurrenceOrderPlugin,
-      SideEffectsFlagPlugin
-      UglifyJsPlugin
-    ]
-  */
-  mode: 'production',
-  // 入口 entry
-  entry: {
-    polyfills: 'polyfills.js',
-    main: 'asd',
-    vendor: [
-      'lodash'
-    ]
-  },
-  // 生产环境
-  devtool: 'source-map',
-  // 开发环境
-  devtool: 'none',
-  // 开发服务器 dev-server
-  devServer: {
-    contentBase: './dist',
-    hot: true
-  },
-  // 出口 output
-  output: {
-    // 输出文件名
-    filename: '[name][chunkhash].js',
-    // 输出的绝对路径
-    path: path.resolve('__dirname', 'dist'),
-    path: path.join('__dirname', 'dist'),
-    // 基础路径
-    publicPath: 'cdn',
-    // 非入口chunk
-    chunkFilename: '[name].bundle.js'
-    
-  },
-  // loader 编译
-  module: {
-    rules: [
-      // css-loader
-      {
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader'
-        ]
-      },
-      // image-loader
-      {
-        test: /\.(png|svg|jpg|gif|jpeg|JPG)$/,
-        use: [
-          'file-loader'
-        ]
-      },
-      // font-loader
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        use: [
-          'file-loader'
-        ]
-      },
-      // csv|tsv-loader
-      {
-        test: /\.(csv|tsv)$/,
-        use: [
-          'csv-loader'
-        ]
-      },
-      // xml-loader
-      {
-        test: /\.xml$/,
-        use: [
-          'xml-loader'
-        ]
-      }
-    ]
-  },
-  // plugins 插件
-  plugins: [
-    // 压缩
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-        drop_console: false
-      }
-    }),
-    // 引用html模板
-    new HtmlWebpackPlugin({
-      title: 'test',
-      template: 'dfsl.html'
-    }),
-    // chunk切块
-    new webpack.optimize.CommonsChunkPlugin({
-      name: ['vendor']
-      name: 'manifest'
-    }),
+const plugins = {
+  production: [
+    // new webpack.optimize.UglifyJsPlugin({
+      // compress: {
+        // warnings: false,
+        // drop_console: false
+      // },
+      // sourceMap: true
+    // }),
+    // new ExtractTextPlugin({
+      // filename: 'css/[name].[contenthash].css'
+    // }),
+    // new OptimizeCSSPlugin({
+      // cssProcessorOptions: {
+        // safe: true
+      // }
+    // }),
+    // // 保持未改动文件hash不变
+    // new webpack.HashedModuleIdsPlugin(),
     // 清理
     new CleanWebpackPlugin([
-      'dist'
+      global.assets
     ]),
-    // HMR需要
-    new webpack.NameModulesPlugin(),
-    new webpack.HotModuleReplacementPlugin()
-    // 定义环境变量
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
+      'process.env.NODE_ENV': JSON.stringify(env)
     }),
-    // 分离Css
-    new ExtractTextPlugin({
-      filename: 'build.min.css',
-      allChunks: true
-    }),
-    // 保持未改动文件hash不变
-    new webpack.HasheModuleIdsPlugin(),
-    // 需要时引入，用时无需import
-    new webpack.ProvidePlugin({
-      // _: 'lodash'
-      // 可以直接用join lodash里的join，如_.join() 换成 join()
-      join: ['lodash', 'join']
+  ],
+  development: [
+    // HMR需要
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(env)
     })
   ]
-  
-  
 }
-module.exports = config;
+  
+const webpackConfig = merge(webpackCommon, {
+  mode: env,
+  entry: global.entry,
+  devtool: env === 'production' ? 'none' : 'source-map',
+  output: output[env],
+  resolve: resolve,
+  module: {
+    rules: rules
+  },
+  plugins: plugins[env]
+})
+
+// development
+if (env==='development') {
+  // let bodyParser = require('body-parser');
+  let opn = require('opn');
+  let express = require('express');
+  // let proxyMiddleware = require('http-proxy-middleware');
+
+  let port = 8080;
+
+  let autoOpenBrowser = true;
+
+  // let proxyTable = config.dev.proxyTable;
+
+  let app = express();
+  // app.use(bodyParser.json());
+  // app.use(bodyParser.urlencoded({ extended: true }));
+
+
+
+  let compiler = webpack(webpackConfig);
+
+  let devMiddleware = require('webpack-dev-middleware')(compiler, {
+    publicPath: webpackConfig.output.publicPath,
+    quiet: true
+  });
+
+  let hotMiddleware = require('webpack-hot-middleware')(compiler, {
+    log: false,
+    heartbeat: 2000
+  });
+
+  // // proxy api requests
+  // Object.keys(proxyTable).forEach(function (context) {
+    // let options = proxyTable[context]
+    // if (typeof options === 'string') {
+      // options = { target: options }
+    // }
+    // app.use(proxyMiddleware(options.filter || context, options))
+  // })
+
+  app.use(devMiddleware)
+
+  app.use(hotMiddleware)
+
+  // let staticPath = path.posix.join(config.dev.assetsPublicPath, config.dev.assetsSubDirectory);
+  // app.use(staticPath, express.static('./static'))
+
+  let uri = 'http://localhost:' + port;
+
+  devMiddleware.waitUntilValid(() => {
+    console.log('> Listening at ' + uri + '\n')
+    opn(uri)
+  })
+
+  let server = app.listen(port);
+}
+
+if (env==='production') {
+  
+  // 分析页面 很有用的哦
+  cliParams.anlyzer && webpackConfig.plugins.push(new BundleAnalyzerPlugin());
+  // 开始咯
+  webpack(webpackConfig, (err,stats) => {
+    if (err) throw err;
+    if (stats.hasErrors()) {
+      console.log(chalk.bgRed(' BUILD ERROR '))
+      console.log(chalk.red(stats.compilation.errors))
+      process.exit(1)
+    }
+    // 打印内容
+    console.log(stats.toString({
+      colors: true,
+      modules: true,
+      children: false,
+      chunks: true,
+      chunkModules: false
+    }))
+    console.log(chalk.bgGreen(' BUILD SUCCESS '))
+  })
+}
